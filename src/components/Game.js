@@ -1,62 +1,68 @@
-import * as BABYLON from 'babylonjs'
-import 'babylonjs-loaders'
-import img from './../assets/textures/amiga.jpg'
-import vertShader from './../shaders/shader.vert'
-import fragShader from './../shaders/shader.frag'
+import * as BABYLON from "babylonjs";
+import "babylonjs-loaders";
+import { SkyMaterial } from "babylonjs-materials";
 
 export default class Game {
-  constructor (canvasId) {
-    this.canvas = document.getElementById(canvasId)
-    this.engine = new BABYLON.Engine(this.canvas, true)
-    this.time = 0
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    this.engine = new BABYLON.Engine(this.canvas, true);
   }
 
-  createScene () {
-    this.scene = new BABYLON.Scene(this.engine)
+  createScene() {
+    this.scene = new BABYLON.Scene(this.engine);
+    this.scene.imageProcessingConfiguration.toneMappingEnabled = true;
+    this.scene.imageProcessingConfiguration.toneMappingType =
+      BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+    // Arc Camera
+    this.camera = new BABYLON.ArcRotateCamera(
+      "Camera",
+      0,
+      0,
+      10,
+      new BABYLON.Vector3(0, 0, 0),
+      this.scene
+    );
+    this.camera.setPosition(new BABYLON.Vector3(0, 0, 20));
+    this.camera.attachControl(this.canvas, true);
 
-    this.camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), this.scene)
-    this.camera.setTarget(BABYLON.Vector3.Zero())
-    this.camera.attachControl(this.canvas, false)
-    this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), this.scene)
+    // Hemispheric light
+    this.light = new BABYLON.HemisphericLight(
+      "light1",
+      new BABYLON.Vector3(0, 1, 0),
+      this.scene
+    );
 
-    let sphere = BABYLON.MeshBuilder.CreateSphere('sphere',
-      {segments: 16, diameter: 2}, this.scene)
-    sphere.position.y = 1
-
-    BABYLON.MeshBuilder.CreateGround('ground',
-      {width: 6, height: 6, subdivisions: 2}, this.scene)
-
-    BABYLON.Effect.ShadersStore['customVertexShader'] = vertShader
-    BABYLON.Effect.ShadersStore['customFragmentShader'] = fragShader
-
-    const shaderMaterial = new BABYLON.ShaderMaterial('shader', this.scene, {
-      vertex: 'custom',
-      fragment: 'custom'
-    },
-    {
-      attributes: ['position', 'normal', 'uv'],
-      uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection']
-    })
-
-    const mainTexture = new BABYLON.Texture(img, this.scene)
-    shaderMaterial.setTexture('textureSampler', mainTexture)
-    shaderMaterial.setFloat('time', 0)
-    shaderMaterial.setVector3('cameraPosition', BABYLON.Vector3.Zero())
-    sphere.material = shaderMaterial
+    this.sky();
   }
 
-  doRender () {
+  doRender() {
     this.engine.runRenderLoop(() => {
-      const shaderMaterial = this.scene.getMaterialByName('shader')
-      shaderMaterial.setFloat('time', this.time)
-      this.time += 0.02
+      this.scene.render();
+    });
 
-      shaderMaterial.setVector3('cameraPosition', this.scene.activeCamera.position)
-      this.scene.render()
-    })
+    window.addEventListener("resize", () => {
+      this.engine.resize();
+    });
+  }
 
-    window.addEventListener('resize', () => {
-      this.engine.resize()
-    })
+  sky() {
+    var skyMaterial = new SkyMaterial("sky", this.scene);
+    skyMaterial.backFaceCulling = false;
+    skyMaterial.turbidity = 5.5;
+    skyMaterial.rayleigh = 1.1;
+    skyMaterial.mieCoefficient = 0.008;
+    skyMaterial.mieDirectionalG = 0.975;
+    skyMaterial.azimuth = 0.3;
+    skyMaterial.luminance = 0.35;
+
+    skyMaterial.inclination = -0.45;
+
+    // Need to find some babylon math utilities for degrees to radian computing
+    // var elevation = 160;
+    // this.phi = THREE.MathUtils.degToRad(90 - elevation);
+    // this.theta = THREE.MathUtils.degToRad(skyMaterial.azimuth);
+
+    var skybox = BABYLON.CreateBox("skybox", { size: 1000.0 }, this.scene);
+    skybox.material = skyMaterial;
   }
 }

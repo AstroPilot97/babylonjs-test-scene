@@ -39,6 +39,14 @@ export default class Game {
   doRender() {
     this.engine.runRenderLoop(() => {
       this.scene.render();
+
+      if (this.phi && this.theta) {
+        this.elevation += 0.02;
+        this.phi = BABYLON.Tools.ToRadians(90 - this.elevation);
+        this.theta = BABYLON.Tools.ToRadians(this.skyMaterial.azimuth * 10);
+        this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
+        this.skyMaterial.sunPosition = this.sunCoords;
+      }
     });
 
     window.addEventListener("resize", () => {
@@ -47,30 +55,30 @@ export default class Game {
   }
 
   sky() {
-    var skyMaterial = new SkyMaterial("sky", this.scene);
-    skyMaterial.backFaceCulling = false;
-    skyMaterial.turbidity = 5.5;
-    skyMaterial.rayleigh = 1.1;
-    skyMaterial.mieCoefficient = 0.008;
-    skyMaterial.mieDirectionalG = 0.975;
-    // skyMaterial.azimuth = 0.1;
-    skyMaterial.luminance = 0.35;
-    skyMaterial.useSunPosition = true;
+    this.skyMaterial = new SkyMaterial("sky", this.scene);
+    this.skyMaterial.backFaceCulling = false;
+    this.skyMaterial.turbidity = 5.5;
+    this.skyMaterial.rayleigh = 1.1;
+    this.skyMaterial.mieCoefficient = 0.008;
+    this.skyMaterial.mieDirectionalG = 0.975;
+    this.skyMaterial.azimuth = 68;
+    this.skyMaterial.luminance = 0.35;
+    this.skyMaterial.useSunPosition = true;
 
-    // var elevation = -2000;
-    // this.phi = BABYLON.Tools.ToRadians(90 - elevation);
-    // this.theta = BABYLON.Tools.ToRadians(skyMaterial.azimuth * 10);
-    // var sunCoords = this.getCoordinatesFromLatLng(this.phi, this.theta, 1);
-    skyMaterial.sunPosition = new BABYLON.Vector3(-0.3, 0.2, 0.4);
+    this.elevation = 15;
+    this.phi = BABYLON.Tools.ToRadians(90 - this.elevation);
+    this.theta = BABYLON.Tools.ToRadians(this.skyMaterial.azimuth * 10);
+    this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
+    this.skyMaterial.sunPosition = this.sunCoords;
 
     var skybox = BABYLON.CreateBox("skybox", { size: 100000.0 }, this.scene);
-    skybox.material = skyMaterial;
+    skybox.material = this.skyMaterial;
   }
 
   mountainPlane() {
     const ground = BABYLON.MeshBuilder.CreateGround(
       "ground",
-      { width: 4096, height: 4096, subdivisions: 24 },
+      { width: 8192, height: 8192, subdivisions: 24 },
       this.scene
     );
 
@@ -95,22 +103,22 @@ export default class Game {
         ).value = 16;
         blocks.heightIntenisty = nodeMaterial.getBlockByName(
           "heightIntensity"
-        ).value = 1024;
+        ).value = 2048;
         ground.material = nodeMaterial;
       }
     );
 
-    ground.translate(new BABYLON.Vector3(-1000, -0, 0), 1);
+    ground.translate(new BABYLON.Vector3(-2500, -100, 0), 1);
   }
 
-  getCoordinatesFromLatLng = function (latitude, longitude, radiusEarth) {
-    let latitude_rad = (latitude * Math.PI) / 180;
-    let longitude_rad = (longitude * Math.PI) / 180;
+  setFromSphericalCoords(radius, phi, theta) {
+    const sinPhiRadius = Math.sin(phi) * radius;
+    const sphericalCoords = {};
 
-    let xPos = radiusEarth * Math.cos(latitude_rad) * Math.cos(longitude_rad);
-    let zPos = radiusEarth * Math.cos(latitude_rad) * Math.sin(longitude_rad);
-    let yPos = radiusEarth * Math.sin(latitude_rad);
+    sphericalCoords.x = sinPhiRadius * Math.sin(theta);
+    sphericalCoords.y = Math.cos(phi) * radius;
+    sphericalCoords.z = sinPhiRadius * Math.cos(theta);
 
-    return { x: xPos, y: yPos, z: zPos };
-  };
+    return sphericalCoords;
+  }
 }

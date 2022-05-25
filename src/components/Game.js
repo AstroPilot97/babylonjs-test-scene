@@ -3,6 +3,7 @@ import "babylonjs-loaders";
 import { SkyMaterial } from "babylonjs-materials";
 import mntnTex from "./../assets/textures/mountains/mntn-tex.jpg";
 import mntnDisp from "./../assets/textures/mountains/DisplacementMap.png";
+import Stats from "stats.js";
 
 export default class Game {
   constructor(canvasId) {
@@ -31,6 +32,14 @@ export default class Game {
       this.scene
     );
 
+    // Stats
+    this.stats = new Stats();
+    const panels = [0, 1, 2]; // 0: fps, 1: ms, 2: mb
+    Array.from(this.stats.dom.children).forEach((child, index) => {
+      child.style.display = panels.includes(index) ? "inline-block" : "none";
+    });
+    document.body.appendChild(this.stats.dom);
+
     this.sky();
 
     this.mountainPlane();
@@ -47,6 +56,8 @@ export default class Game {
         this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
         this.skyMaterial.sunPosition = this.sunCoords;
       }
+
+      this.stats.update();
     });
 
     window.addEventListener("resize", () => {

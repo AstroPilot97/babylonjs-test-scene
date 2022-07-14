@@ -26,11 +26,12 @@ export default class Game {
     this.camera.attachControl(this.canvas, false);
 
     // Hemispheric light
-    this.light = new BABYLON.HemisphericLight(
-      "light1",
+    this.hemiLight = new BABYLON.HemisphericLight(
+      "hemiLight",
       new BABYLON.Vector3(0, 1, 0),
       this.scene
     );
+    this.hemiLight.intensity = 0.55;
 
     // Stats
     this.stats = new Stats();
@@ -56,6 +57,9 @@ export default class Game {
         this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
         this.skyMaterial.sunPosition = this.sunCoords;
       }
+
+      this.hemiLight.intensity =
+        this.skyMaterial.sunPosition.y > 0.1 ? 0.55 : 0.1;
 
       this.stats.update();
     });
@@ -99,7 +103,7 @@ export default class Game {
     };
 
     const blocks = {};
-    BABYLON.NodeMaterial.ParseFromSnippetAsync("LDM1PB#4", this.scene).then(
+    BABYLON.NodeMaterial.ParseFromSnippetAsync("LDM1PB#5", this.scene).then(
       (nodeMaterial) => {
         nodeMaterial.name = "nodeMat";
         blocks.color = nodeMaterial.getBlockByName("texUrl").texture =

@@ -1,8 +1,6 @@
 import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
 import { SkyMaterial } from "babylonjs-materials";
-import mntnTex from "./../assets/textures/mountains/mntn-tex.jpg";
-import mntnDisp from "./../assets/textures/mountains/DisplacementMap.png";
 import Stats from "stats.js";
 
 export default class Game {
@@ -42,8 +40,8 @@ export default class Game {
     document.body.appendChild(this.stats.dom);
 
     this.sky();
-
     this.mountainPlane();
+    this.initBalloons();
   }
 
   doRender() {
@@ -98,8 +96,18 @@ export default class Game {
     );
 
     const textures = {
-      color: new BABYLON.Texture(mntnTex, this.scene, false, false),
-      height: new BABYLON.Texture(mntnDisp, this.scene, false, false),
+      color: new BABYLON.Texture(
+        "textures/mountains/mntn-tex.jpg",
+        this.scene,
+        false,
+        false
+      ),
+      height: new BABYLON.Texture(
+        "textures/mountains/DisplacementMap.png",
+        this.scene,
+        false,
+        false
+      ),
     };
 
     const blocks = {};
@@ -124,6 +132,38 @@ export default class Game {
     );
 
     ground.translate(new BABYLON.Vector3(-2500, -100, 0), 1);
+  }
+
+  initBalloons() {
+    let balloonPlacements = [
+      new BABYLON.Vector3(-0.25, 3, 21.5),
+      new BABYLON.Vector3(8, 10, 25),
+      new BABYLON.Vector3(6, -5, 23),
+      new BABYLON.Vector3(-10, 7, 19),
+      new BABYLON.Vector3(0, 10, 22.5),
+      new BABYLON.Vector3(-10, -5, 25),
+      new BABYLON.Vector3(-5, -1, 17),
+      new BABYLON.Vector3(15, 5, 23),
+      new BABYLON.Vector3(4, -1, 25),
+      new BABYLON.Vector3(13, 11, 20),
+      new BABYLON.Vector3(-14, 0, 21.5),
+      new BABYLON.Vector3(-6, 8, 25),
+    ];
+
+    for (let i = 0; i < balloonPlacements.length; i++) {
+      BABYLON.SceneLoader.ImportMesh(
+        "",
+        "models/peachy_balloon/",
+        "scene.glb",
+        this.scene,
+        function (meshes) {
+          meshes.forEach((mesh) => {
+            mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+            mesh.position = balloonPlacements[i];
+          });
+        }
+      );
+    }
   }
 
   setFromSphericalCoords(radius, phi, theta) {

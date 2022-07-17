@@ -54,16 +54,23 @@ export default class Game {
         this.theta = BABYLON.Tools.ToRadians(this.skyMaterial.azimuth * 10);
         this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
         this.skyMaterial.sunPosition = this.sunCoords;
-        this.sunlight.direction = this.setFromSphericalCoords(
-          -50,
-          this.phi,
-          this.theta
+
+        var sunDir = this.setFromSphericalCoords(-50, this.phi, this.theta);
+
+        this.sunlight.direction = new BABYLON.Vector3(
+          sunDir.x,
+          sunDir.y,
+          sunDir.z
         );
-        this.gizmo.light = this.sunlight;
       }
 
-      this.hemiLight.intensity =
-        this.skyMaterial.sunPosition.y > 0.1 ? 0.55 : 0.1;
+      if (this.skyMaterial.sunPosition.y > 0.1) {
+        this.hemiLight.intensity = 0.55;
+        this.sunlight.setEnabled(true);
+      } else {
+        this.hemiLight.intensity = 0.1;
+        this.sunlight.setEnabled(false);
+      }
 
       this.stats.update();
     });
@@ -96,23 +103,10 @@ export default class Game {
     this.theta = BABYLON.Tools.ToRadians(this.skyMaterial.azimuth * 10);
     this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
     this.skyMaterial.sunPosition = this.sunCoords;
-    this.sunlight.direction = this.setFromSphericalCoords(
-      -50,
-      this.phi,
-      this.theta
-    );
+    var sunDir = this.setFromSphericalCoords(-50, this.phi, this.theta);
 
-    this.gizmo = new BABYLON.LightGizmo();
-    this.gizmo.light = this.sunlight;
-
-    var dlh = new BABYLON.DirectionalLightFrustumViewer(
-      this.sunlight,
-      this.camera
-    );
-
-    this.scene.onBeforeRenderObservable.add(() => {
-      dlh.update();
-    });
+    this.sunlight.direction = new BABYLON.Vector3(sunDir.x, sunDir.y, sunDir.z);
+    this.sunlight.intensity = 5;
 
     var skybox = BABYLON.CreateBox("skybox", { size: 100000.0 }, this.scene);
     skybox.material = this.skyMaterial;
@@ -182,6 +176,8 @@ export default class Game {
     ];
 
     for (let i = 0; i < balloonPlacements.length; i++) {
+      var shadowGenerator = new BABYLON.ShadowGenerator(4096, this.sunlight);
+      shadowGenerator.useContactHardeningShadow = true;
       BABYLON.SceneLoader.ImportMesh(
         "",
         "models/peachy_balloon/",
@@ -191,6 +187,8 @@ export default class Game {
           meshes.forEach((mesh) => {
             mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
             mesh.position = balloonPlacements[i];
+            mesh.receiveShadows = true;
+            shadowGenerator.addShadowCaster(mesh, true);
           });
         }
       );

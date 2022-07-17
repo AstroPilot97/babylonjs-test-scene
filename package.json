@@ -15,15 +15,15 @@
   },
   "homepage": "https://github.com/rostegg/babylonjs-boilerplate#readme",
   "devDependencies": {
-    "@babel/core": "^7.18.2",
-    "@babel/preset-env": "^7.18.2",
+    "@babel/core": "^7.18.6",
+    "@babel/preset-env": "^7.18.6",
     "babel-loader": "^8.2.5",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "clean-webpack-plugin": "^4.0.0",
     "compression-webpack-plugin": "^10.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
-    "eslint": "^8.16.0",
+    "eslint": "^8.20.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^1.9.0",
@@ -38,15 +38,15 @@
     "raw-loader": "^4.0.2",
     "style-loader": "^3.3.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^5.72.1",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.9.0",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.9.3",
     "webpack-livereload-plugin": "^3.0.2"
   },
   "dependencies": {
-    "babylonjs": "^5.7.0",
-    "babylonjs-loaders": "^5.7.0",
-    "babylonjs-materials": "^5.7.0",
+    "babylonjs": "^5.15.1",
+    "babylonjs-loaders": "^5.15.1",
+    "babylonjs-materials": "^5.15.1",
     "stats.js": "^0.17.0"
   }
 }

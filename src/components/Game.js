@@ -54,6 +54,12 @@ export default class Game {
         this.theta = BABYLON.Tools.ToRadians(this.skyMaterial.azimuth * 10);
         this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
         this.skyMaterial.sunPosition = this.sunCoords;
+        this.sunlight.direction = this.setFromSphericalCoords(
+          -50,
+          this.phi,
+          this.theta
+        );
+        this.gizmo.light = this.sunlight;
       }
 
       this.hemiLight.intensity =
@@ -78,11 +84,35 @@ export default class Game {
     this.skyMaterial.luminance = 0.35;
     this.skyMaterial.useSunPosition = true;
 
+    this.sunlight = new BABYLON.DirectionalLight(
+      "sunLight",
+      new BABYLON.Vector3(0, -1, 0),
+      this.scene
+    );
+    this.sunlight.position = new BABYLON.Vector3(0, 300, 0);
+
     this.elevation = 15;
     this.phi = BABYLON.Tools.ToRadians(90 - this.elevation);
     this.theta = BABYLON.Tools.ToRadians(this.skyMaterial.azimuth * 10);
     this.sunCoords = this.setFromSphericalCoords(1, this.phi, this.theta);
     this.skyMaterial.sunPosition = this.sunCoords;
+    this.sunlight.direction = this.setFromSphericalCoords(
+      -50,
+      this.phi,
+      this.theta
+    );
+
+    this.gizmo = new BABYLON.LightGizmo();
+    this.gizmo.light = this.sunlight;
+
+    var dlh = new BABYLON.DirectionalLightFrustumViewer(
+      this.sunlight,
+      this.camera
+    );
+
+    this.scene.onBeforeRenderObservable.add(() => {
+      dlh.update();
+    });
 
     var skybox = BABYLON.CreateBox("skybox", { size: 100000.0 }, this.scene);
     skybox.material = this.skyMaterial;
@@ -91,7 +121,7 @@ export default class Game {
   mountainPlane() {
     const ground = BABYLON.MeshBuilder.CreateGround(
       "ground",
-      { width: 8192, height: 8192, subdivisions: 24 },
+      { width: 16384, height: 16384, subdivisions: 24 },
       this.scene
     );
 
@@ -126,12 +156,13 @@ export default class Game {
         ).value = 16;
         blocks.heightIntenisty = nodeMaterial.getBlockByName(
           "heightIntensity"
-        ).value = 2048;
+        ).value = 3198;
         ground.material = nodeMaterial;
       }
     );
 
     ground.translate(new BABYLON.Vector3(-2500, -100, 0), 1);
+    this.sunlight.excludedMeshes.push(ground);
   }
 
   initBalloons() {

@@ -42,6 +42,7 @@ export default class Game {
     this.sky();
     this.mountainPlane();
     this.initBalloons();
+    this.initForests();
   }
 
   doRender() {
@@ -204,5 +205,34 @@ export default class Game {
     sphericalCoords.z = sinPhiRadius * Math.cos(theta);
 
     return sphericalCoords;
+  }
+
+  initForests() {
+    BABYLON.SceneLoader.ImportMesh(
+      "",
+      "models/pine_tree/",
+      "scene.glb",
+      this.scene,
+      function (meshes) {
+        var mesh = meshes[1];
+        var count = 5000;
+        mesh.isVisible = false;
+        mesh.alwaysSelectAsActiveMesh = true;
+        for (var index = 0; index < count; index++) {
+          var newInstance = mesh.createInstance("i" + index);
+          var x = BABYLON.Scalar.RandomRange(-3000, 1000);
+          var z = BABYLON.Scalar.RandomRange(-3000, 3000);
+
+          var y = BABYLON.Scalar.RandomRange(-98, -88);
+
+          newInstance.position = new BABYLON.Vector3(x, y, z);
+
+          newInstance.rotate(BABYLON.Axis.X, -1.5, BABYLON.Space.WORLD);
+
+          newInstance.scaling.addInPlace(new BABYLON.Vector3(5, 5, 5));
+          newInstance.freezeWorldMatrix();
+        }
+      }
+    );
   }
 }

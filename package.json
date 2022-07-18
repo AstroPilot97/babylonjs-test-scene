@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack-dev-server --config ./webpack.config.js --open --hot --color",
-    "prod": "NODE_ENV=production webpack --progress --hide-modules",
+    "prod": "NODE_ENV=production webpack --progress --config ./webpack.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "rostegg",

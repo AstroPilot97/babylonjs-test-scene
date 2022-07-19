@@ -86,11 +86,7 @@ export default class Game {
       }
 
       this.ground.position.x += 0.05;
-      this.scene.meshes.forEach((mesh) => {
-        if (mesh.id.includes("tree")) {
-          mesh.position.x += 0.05;
-        }
-      });
+      if (this.scene.meshes[3]) this.scene.meshes[3].position.x -= 0.05;
 
       this.stats.update();
     });
@@ -241,16 +237,27 @@ export default class Game {
       this.scene,
       function (meshes) {
         var mesh = meshes[1];
-        mesh.isVisible = false;
-        for (var index = 0; index < 5000; index++) {
-          var newInstance = mesh.createInstance("tree" + index);
-          var x = BABYLON.Scalar.RandomRange(-5000, 5000);
-          var z = BABYLON.Scalar.RandomRange(-5000, 5000);
-          var y = BABYLON.Scalar.RandomRange(-90, -80);
-          newInstance.position = new BABYLON.Vector3(x, y, z);
-          newInstance.rotate(BABYLON.Axis.X, -1.5, BABYLON.Space.WORLD);
-          newInstance.scaling.addInPlace(new BABYLON.Vector3(5, 5, 5));
+        mesh.isPickable = false;
+        let matrices = [];
+        for (let index = 0; index < 40000; index++) {
+          var matrix = BABYLON.Matrix.Translation(
+            BABYLON.Scalar.RandomRange(-300, 700),
+            BABYLON.Scalar.RandomRange(-500, 500),
+            BABYLON.Scalar.RandomRange(-6, -5)
+          );
+
+          var scale = BABYLON.Scalar.RandomRange(16, 17);
+          var matrix2 = BABYLON.Matrix.Scaling(scale, scale, scale);
+
+          var q = BABYLON.Quaternion.FromEulerAngles(-0.078, 0.163, 0); // radians
+          var matrix3 = new BABYLON.Matrix();
+
+          BABYLON.Matrix.FromQuaternionToRef(q, matrix3);
+
+          matrices.push(matrix.multiply(matrix2).multiply(matrix3));
         }
+
+        var thinInstance = mesh.thinInstanceAdd(matrices);
       }
     );
   }

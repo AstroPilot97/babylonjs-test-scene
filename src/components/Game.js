@@ -6,11 +6,15 @@ import Stats from "stats.js";
 export default class Game {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
-    this.engine = new BABYLON.Engine(this.canvas, true);
+    this.engine = new BABYLON.Engine(this.canvas, false, null, true);
   }
 
   createScene() {
-    this.scene = new BABYLON.Scene(this.engine);
+    this.scene = new BABYLON.Scene(this.engine, {
+      useClonedMeshMap: true,
+      useMaterialMeshMap: true,
+      useGeometryUniqueIdsMap: true,
+    });
     this.scene.imageProcessingConfiguration.toneMappingEnabled = true;
     this.scene.imageProcessingConfiguration.toneMappingType =
       BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
@@ -39,10 +43,18 @@ export default class Game {
     });
     document.body.appendChild(this.stats.dom);
 
+    //Loading scene elements
     this.sky();
     this.mountainPlane();
     this.initBalloons();
     this.initForests();
+
+    //Optimization
+    this.scene.skipPointerMovePicking = true;
+    this.scene.autoClear = false; // Color buffer
+    this.scene.autoClearDepthAndStencil = false; // Depth and stencil, obviously
+    this.scene.blockMaterialDirtyMechanism = true;
+    this.scene.clearCachedVertexData();
   }
 
   doRender() {
@@ -72,6 +84,13 @@ export default class Game {
         this.hemiLight.intensity = 0.1;
         this.sunlight.setEnabled(false);
       }
+
+      this.ground.position.x += 0.05;
+      this.scene.meshes.forEach((mesh) => {
+        if (mesh.id.includes("tree")) {
+          mesh.position.x += 0.05;
+        }
+      });
 
       this.stats.update();
     });
@@ -114,7 +133,7 @@ export default class Game {
   }
 
   mountainPlane() {
-    const ground = BABYLON.MeshBuilder.CreateGround(
+    this.ground = BABYLON.MeshBuilder.CreateGround(
       "ground",
       { width: 16384, height: 16384, subdivisions: 24 },
       this.scene
@@ -152,12 +171,13 @@ export default class Game {
         blocks.heightIntenisty = nodeMaterial.getBlockByName(
           "heightIntensity"
         ).value = 3198;
-        ground.material = nodeMaterial;
+        nodeMaterial.freeze();
+        this.ground.material = nodeMaterial;
       }
     );
 
-    ground.translate(new BABYLON.Vector3(-2500, -100, 0), 1);
-    this.sunlight.excludedMeshes.push(ground);
+    this.ground.translate(new BABYLON.Vector3(-2500, -100, 0), 1);
+    this.sunlight.excludedMeshes.push(this.ground);
   }
 
   initBalloons() {
@@ -177,7 +197,7 @@ export default class Game {
     ];
 
     for (let i = 0; i < balloonPlacements.length; i++) {
-      var shadowGenerator = new BABYLON.ShadowGenerator(4096, this.sunlight);
+      var shadowGenerator = new BABYLON.ShadowGenerator(2048, this.sunlight);
       shadowGenerator.useContactHardeningShadow = true;
       BABYLON.SceneLoader.ImportMesh(
         "",
@@ -190,7 +210,13 @@ export default class Game {
             mesh.position = balloonPlacements[i];
             mesh.receiveShadows = true;
             shadowGenerator.addShadowCaster(mesh, true);
+            mesh.freezeWorldMatrix();
+            mesh.isPickable = false;
+            mesh.doNotSyncBoundingInfo = true;
           });
+          if (i == balloonPlacements.length - 1) {
+            document.getElementById("loader").style.display = "none";
+          }
         }
       );
     }
@@ -215,22 +241,15 @@ export default class Game {
       this.scene,
       function (meshes) {
         var mesh = meshes[1];
-        var count = 5000;
         mesh.isVisible = false;
-        mesh.alwaysSelectAsActiveMesh = true;
-        for (var index = 0; index < count; index++) {
-          var newInstance = mesh.createInstance("i" + index);
-          var x = BABYLON.Scalar.RandomRange(-3000, 1000);
-          var z = BABYLON.Scalar.RandomRange(-3000, 3000);
-
-          var y = BABYLON.Scalar.RandomRange(-98, -88);
-
+        for (var index = 0; index < 5000; index++) {
+          var newInstance = mesh.createInstance("tree" + index);
+          var x = BABYLON.Scalar.RandomRange(-5000, 5000);
+          var z = BABYLON.Scalar.RandomRange(-5000, 5000);
+          var y = BABYLON.Scalar.RandomRange(-90, -80);
           newInstance.position = new BABYLON.Vector3(x, y, z);
-
           newInstance.rotate(BABYLON.Axis.X, -1.5, BABYLON.Space.WORLD);
-
           newInstance.scaling.addInPlace(new BABYLON.Vector3(5, 5, 5));
-          newInstance.freezeWorldMatrix();
         }
       }
     );

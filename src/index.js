@@ -11,6 +11,7 @@ let stats, gui;
 let hemiLight, sunlight;
 let elevation, phi, theta, skyMaterial, sunCoords;
 let ground;
+let airship;
 let testResults = [];
 let readyToTest = false; // Flag to halt any testing logic before full asset load
 
@@ -126,7 +127,10 @@ function doRender() {
       }
     });
 
-    camera.position.x -= 0.054;
+    if (airship) {
+      airship.position.x -= 0.06;
+      camera.position.x -= 0.054;
+    }
 
     stats.update();
   });
@@ -230,6 +234,7 @@ function mountainPlane() {
 function initBalloons() {
   let balloonPlacements = [
     new BABYLON.Vector3(-0.25, 3, 21.5),
+    new BABYLON.Vector3(-0.25, 3, 21.5),
     new BABYLON.Vector3(8, 10, 25),
     new BABYLON.Vector3(6, -5, 23),
     new BABYLON.Vector3(-10, 7, 19),
@@ -243,9 +248,10 @@ function initBalloons() {
     new BABYLON.Vector3(-6, 8, 25),
   ];
 
+  airship = new BABYLON.TransformNode("airship", scene, true);
+  var shadowGenerator = new BABYLON.ShadowGenerator(4096, sunlight);
+  shadowGenerator.useContactHardeningShadow = true;
   for (let i = 0; i < balloonPlacements.length; i++) {
-    var shadowGenerator = new BABYLON.ShadowGenerator(4096, sunlight);
-    shadowGenerator.useContactHardeningShadow = true;
     BABYLON.SceneLoader.ImportMesh(
       "",
       "models/peachy_balloon/",
@@ -257,11 +263,19 @@ function initBalloons() {
           mesh.position = balloonPlacements[i];
           mesh.receiveShadows = true;
           shadowGenerator.addShadowCaster(mesh, true);
+
+          if (i == 0) {
+            mesh.parent = airship;
+            mesh.visibility = 0;
+          }
         });
+        airship.position = new BABYLON.Vector3(0, 120, 0);
+
         if (i == balloonPlacements.length - 1) {
           document.getElementById("loader").style.display = "none";
           readyToTest = true;
           startClockTimer();
+          beginCameraLoop();
         }
       }
     );
@@ -388,4 +402,21 @@ function initTestResultControls() {
   };
 
   gui.add(controlObj, "SaveTestResults");
+}
+
+function beginCameraLoop() {
+  let cameraPositions = [
+    [0, 0, -10],
+    [150, -200, -280],
+    [0, 200, 15],
+    [400, 10, -0],
+  ];
+  let currentPosition = 0;
+  setInterval(function () {
+    let indexPosition = ++currentPosition % cameraPositions.length;
+    camera.position.x = airship.position.x + cameraPositions[indexPosition][0];
+    camera.position.y = airship.position.y + cameraPositions[indexPosition][1];
+    camera.position.z = airship.position.z + cameraPositions[indexPosition][2];
+    camera.setTarget(airship.position);
+  }, 20000);
 }

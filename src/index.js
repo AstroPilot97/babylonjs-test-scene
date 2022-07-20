@@ -62,7 +62,6 @@ function createScene() {
   mountainPlane();
   initBalloons();
   initForests();
-
   const cloudPlacement = [
     new BABYLON.Vector3(-1156, 100, 0),
     new BABYLON.Vector3(770, 550, 400),
@@ -245,7 +244,7 @@ function initBalloons() {
   ];
 
   for (let i = 0; i < balloonPlacements.length; i++) {
-    var shadowGenerator = new BABYLON.ShadowGenerator(2048, sunlight);
+    var shadowGenerator = new BABYLON.ShadowGenerator(4096, sunlight);
     shadowGenerator.useContactHardeningShadow = true;
     BABYLON.SceneLoader.ImportMesh(
       "",
@@ -258,7 +257,6 @@ function initBalloons() {
           mesh.position = balloonPlacements[i];
           mesh.receiveShadows = true;
           shadowGenerator.addShadowCaster(mesh, true);
-          mesh.isPickable = false;
         });
         if (i == balloonPlacements.length - 1) {
           document.getElementById("loader").style.display = "none";
@@ -375,7 +373,7 @@ function initTestResultControls() {
         [
           `Three.js performance test results \n
           Testing date: ${Moment().toLocaleString()}; \n
-          Screen resolution: width: ${screen.width}, height: ${screen.height} \n
+          Screen resolution: width: ${canvas.width}, height: ${canvas.height} \n
           Frames per second (each FPS count in array was ticked every second):
           [${testResults}]
           `,

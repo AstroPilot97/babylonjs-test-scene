@@ -20,6 +20,28 @@
       height: 100%;
     }
 
+    #info {
+      background-color: rgba(0, 0, 0, 0.75);
+      color: #f3f3f3;
+      position: absolute;
+      top: 0px;
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      text-align: center;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    a {
+      color: #ff0;
+      text-decoration: none;
+    }
+
     #loader {
       border: 5px solid #f3f3f3;
       /* Light grey */
@@ -49,6 +71,10 @@
 
 <body>
   <div id="loader"></div>
+  <div id="info">
+    <p><a href="https://www.babylonjs.com/" target="_blank" rel="noopener">Babylon.js</a> - performance test scene</p>
+    <p id="timeElapsed"></p>
+  </div>
   <canvas id="babylonCanvas"></canvas>
 </body>
 

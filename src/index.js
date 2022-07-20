@@ -3,9 +3,11 @@ import "babylonjs-loaders";
 import { SkyMaterial } from "babylonjs-materials";
 import Stats from "stats.js";
 import Moment from "moment";
+import * as dat from "dat.gui";
+import { saveAs } from "file-saver";
 
 let canvas, engine, scene, camera;
-let stats;
+let stats, gui;
 let hemiLight, sunlight;
 let elevation, phi, theta, skyMaterial, sunCoords;
 let ground;
@@ -35,6 +37,9 @@ function createScene() {
   );
   camera.maxZ = 100000;
   camera.attachControl(canvas, false);
+
+  // GUI
+  gui = new dat.GUI();
 
   // Hemispheric light
   hemiLight = new BABYLON.HemisphericLight(
@@ -80,6 +85,9 @@ function createScene() {
       cloudPlacement[i]
     );
   }
+
+  // Test controls
+  initTestResultControls();
 
   //Optimization
   scene.skipPointerMovePicking = true;
@@ -358,4 +366,28 @@ function startClockTimer() {
       testResults.push(fps);
     }
   }, 1000);
+}
+
+function initTestResultControls() {
+  let controlObj = {
+    SaveTestResults: function () {
+      var testFile = new File(
+        [
+          `Three.js performance test results \n
+          Testing date: ${Moment().toLocaleString()}; \n
+          Screen resolution: width: ${screen.width}, height: ${screen.height} \n
+          Frames per second (each FPS count in array was ticked every second):
+          [${testResults}]
+          `,
+        ],
+        "test_results.txt",
+        {
+          type: "text/plain;charset=utf-8",
+        }
+      );
+      saveAs(testFile);
+    },
+  };
+
+  gui.add(controlObj, "SaveTestResults");
 }

@@ -2,12 +2,15 @@ import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
 import { SkyMaterial } from "babylonjs-materials";
 import Stats from "stats.js";
+import Moment from "moment";
 
 let canvas, engine, scene, camera;
 let stats;
 let hemiLight, sunlight;
 let elevation, phi, theta, skyMaterial, sunCoords;
 let ground;
+let testResults = [];
+let readyToTest = false; // Flag to halt any testing logic before full asset load
 
 createScene();
 doRender();
@@ -251,6 +254,8 @@ function initBalloons() {
         });
         if (i == balloonPlacements.length - 1) {
           document.getElementById("loader").style.display = "none";
+          readyToTest = true;
+          startClockTimer();
         }
       }
     );
@@ -330,4 +335,27 @@ function initClouds(particleCount, minEmitBox, maxEmitBox, maxSize, position) {
   fountain.position = position;
 
   particleSystem.start();
+}
+
+function startClockTimer() {
+  let start = Moment();
+  setInterval(function () {
+    let difference = Moment().diff(start, "seconds");
+    let elapsedTimeSeconds = Math.round(difference);
+    let elapsedTimeMinutes = elapsedTimeSeconds / 60;
+    elapsedTimeSeconds = Math.floor(elapsedTimeSeconds) % 60;
+    elapsedTimeMinutes = Math.floor(elapsedTimeMinutes) % 60;
+    let stringMinutes = elapsedTimeMinutes.toLocaleString();
+    let stringSeconds = elapsedTimeSeconds.toLocaleString();
+    if (elapsedTimeSeconds.toString().length < 2) {
+      stringSeconds = "0" + stringSeconds;
+    }
+    document.getElementById(
+      "timeElapsed"
+    ).innerHTML = `Time elapsed: ${stringMinutes}:${stringSeconds}`;
+    let fps = Math.round(engine.getFps());
+    if (readyToTest) {
+      testResults.push(fps);
+    }
+  }, 1000);
 }

@@ -74,7 +74,7 @@ function createScene() {
 
   const cloudPlacement = [
     new BABYLON.Vector3(-1156, 100, 0),
-    new BABYLON.Vector3(670, 250, 1800),
+    new BABYLON.Vector3(870, 250, 1800),
     new BABYLON.Vector3(-800, 170, 1500),
     new BABYLON.Vector3(-2390, 1030, 1610),
     new BABYLON.Vector3(-6000, 450, 3000),
@@ -83,7 +83,7 @@ function createScene() {
     new BABYLON.Vector3(-5000, 854, -400),
   ];
 
-  const cloudScaling = [200, 250, 450, 300, 500, 350, 175, 400];
+  const cloudScaling = [150, 125, 350, 300, 400, 250, 175, 400];
 
   for (let i = 0; i < cloudPlacement.length; i++) {
     initClouds(
@@ -111,7 +111,7 @@ function doRender() {
     scene.render();
 
     if (phi && theta && readyToTest) {
-      elevation += 0.02;
+      elevation += 0.03;
       phi = BABYLON.Tools.ToRadians(90 - elevation);
       theta = BABYLON.Tools.ToRadians(skyMaterial.azimuth * 10);
       sunCoords = setFromSphericalCoords(1, phi, theta);

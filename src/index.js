@@ -6,7 +6,7 @@ import Moment from "moment";
 import * as dat from "dat.gui";
 import { saveAs } from "file-saver";
 
-let canvas, engine, scene, camera;
+let canvas, engine, scene, camera, pipeline;
 let stats, gui;
 let hemiLight, sunlight;
 let elevation, phi, theta, skyMaterial, sunCoords;
@@ -39,6 +39,14 @@ function createScene() {
   camera.maxZ = 100000;
   camera.attachControl(canvas, false);
 
+  //Rendering pipeline
+  pipeline = new BABYLON.DefaultRenderingPipeline(
+    "defaultPipeline", // The name of the pipeline
+    true, // Do you want the pipeline to use HDR texture?
+    scene, // The scene instance
+    [camera] // The list of cameras to be attached to
+  );
+
   // GUI
   gui = new dat.GUI();
 
@@ -63,18 +71,20 @@ function createScene() {
   mountainPlane();
   initBalloons();
   initForests();
+  initPostprocessing();
+
   const cloudPlacement = [
     new BABYLON.Vector3(-1156, 100, 0),
-    new BABYLON.Vector3(770, 550, 400),
+    new BABYLON.Vector3(370, 250, 400),
     new BABYLON.Vector3(-800, 170, 1500),
     new BABYLON.Vector3(-2390, 1030, 1610),
     new BABYLON.Vector3(-6000, 450, 3000),
-    new BABYLON.Vector3(980, 252, -1970),
-    new BABYLON.Vector3(-390, 169, -740),
-    new BABYLON.Vector3(-1800, 54, 200),
+    new BABYLON.Vector3(980, 252, -870),
+    new BABYLON.Vector3(-590, 169, -1240),
+    new BABYLON.Vector3(-5000, 854, -400),
   ];
 
-  const cloudScaling = [150, 250, 450, 300, 500, 350, 175, 25];
+  const cloudScaling = [200, 250, 450, 300, 500, 350, 175, 400];
 
   for (let i = 0; i < cloudPlacement.length; i++) {
     initClouds(
@@ -101,7 +111,7 @@ function doRender() {
   engine.runRenderLoop(() => {
     scene.render();
 
-    if (phi && theta) {
+    if (phi && theta && readyToTest) {
       elevation += 0.02;
       phi = BABYLON.Tools.ToRadians(90 - elevation);
       theta = BABYLON.Tools.ToRadians(skyMaterial.azimuth * 10);
@@ -121,13 +131,15 @@ function doRender() {
       sunlight.setEnabled(false);
     }
 
-    scene.meshes.forEach((mesh) => {
-      if (mesh.id.includes("Object")) {
-        mesh.position.x += 0.002;
-      }
-    });
+    if (readyToTest) {
+      scene.meshes.forEach((mesh) => {
+        if (mesh.id.includes("Object")) {
+          mesh.position.x += 0.002;
+        }
+      });
+    }
 
-    if (airship) {
+    if (airship && readyToTest) {
       airship.position.x -= 0.054;
       camera.position.x -= 0.054;
     }
@@ -420,4 +432,18 @@ function beginCameraLoop() {
     camera.position.z = airship.position.z + cameraPositions[indexPosition][2];
     camera.setTarget(airship.position);
   }, 20000);
+}
+
+function initPostprocessing() {
+  pipeline.bloomEnabled = true;
+  pipeline.bloomThreshold = 0.8;
+  pipeline.bloomWeight = 0.3;
+  pipeline.bloomKernel = 64;
+  pipeline.bloomScale = 0.5;
+
+  pipeline.depthOfFieldEnabled = true;
+  pipeline.depthOfFieldBlurLevel = BABYLON.DepthOfFieldEffectBlurLevel.Low;
+  pipeline.depthOfField.focusDistance = 4000; // distance of the current focus point from the camera in millimeters considering 1 scene unit is 1 meter
+  pipeline.depthOfField.focalLength = 60; // focal length of the camera in millimeters
+  pipeline.depthOfField.fStop = 1; // aka F number of the camera defined in stops as it would be on a physical device
 }

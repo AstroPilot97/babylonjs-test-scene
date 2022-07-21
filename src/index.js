@@ -128,7 +128,7 @@ function doRender() {
     });
 
     if (airship) {
-      airship.position.x -= 0.06;
+      airship.position.x -= 0.054;
       camera.position.x -= 0.054;
     }
 
@@ -269,7 +269,7 @@ function initBalloons() {
             mesh.visibility = 0;
           }
         });
-        airship.position = new BABYLON.Vector3(0, 120, 0);
+        airship.position = new BABYLON.Vector3(0, 100, 30);
 
         if (i == balloonPlacements.length - 1) {
           document.getElementById("loader").style.display = "none";
@@ -406,10 +406,11 @@ function initTestResultControls() {
 
 function beginCameraLoop() {
   let cameraPositions = [
-    [0, 0, -10],
+    [0, 0, -40],
     [150, -200, -280],
-    [0, 200, 15],
-    [400, 10, -0],
+    [0, 300, 15],
+    [300, 10, -0],
+    [-200, 40, 70],
   ];
   let currentPosition = 0;
   setInterval(function () {

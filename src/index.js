@@ -439,10 +439,4 @@ function initPostprocessing() {
   pipeline.bloomWeight = 0.3;
   pipeline.bloomKernel = 64;
   pipeline.bloomScale = 0.5;
-
-  pipeline.depthOfFieldEnabled = true;
-  pipeline.depthOfFieldBlurLevel = BABYLON.DepthOfFieldEffectBlurLevel.Low;
-  pipeline.depthOfField.focusDistance = 4000; // distance of the current focus point from the camera in millimeters considering 1 scene unit is 1 meter
-  pipeline.depthOfField.focalLength = 60; // focal length of the camera in millimeters
-  pipeline.depthOfField.fStop = 1; // aka F number of the camera defined in stops as it would be on a physical device
 }

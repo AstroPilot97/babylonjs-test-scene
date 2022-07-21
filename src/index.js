@@ -37,7 +37,6 @@ function createScene() {
     scene
   );
   camera.maxZ = 100000;
-  camera.attachControl(canvas, false);
 
   //Rendering pipeline
   pipeline = new BABYLON.DefaultRenderingPipeline(
@@ -75,7 +74,7 @@ function createScene() {
 
   const cloudPlacement = [
     new BABYLON.Vector3(-1156, 100, 0),
-    new BABYLON.Vector3(370, 250, 400),
+    new BABYLON.Vector3(670, 250, 1800),
     new BABYLON.Vector3(-800, 170, 1500),
     new BABYLON.Vector3(-2390, 1030, 1610),
     new BABYLON.Vector3(-6000, 450, 3000),

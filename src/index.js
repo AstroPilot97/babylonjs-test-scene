@@ -396,7 +396,7 @@ function initTestResultControls() {
     SaveTestResults: function () {
       var testFile = new File(
         [
-          `Three.js performance test results \n
+          `Babylon.js performance test results \n
           Testing date: ${Moment().toLocaleString()}; \n
           Screen resolution: width: ${canvas.width}, height: ${canvas.height} \n
           Frames per second (each FPS count in array was ticked every second):

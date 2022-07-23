@@ -83,7 +83,7 @@ function createScene() {
     new BABYLON.Vector3(-5000, 854, -400),
   ];
 
-  const cloudScaling = [150, 225, 150, 100, 300, 150, 175, 100];
+  const cloudScaling = [150, 125, 150, 100, 300, 150, 175, 50];
 
   for (let i = 0; i < cloudPlacement.length; i++) {
     initClouds(
@@ -260,7 +260,7 @@ function initBalloons() {
   ];
 
   airship = new BABYLON.TransformNode("airship", scene, true);
-  var shadowGenerator = new BABYLON.ShadowGenerator(4096, sunlight);
+  var shadowGenerator = new BABYLON.ShadowGenerator(2048, sunlight);
   shadowGenerator.useContactHardeningShadow = true;
   for (let i = 0; i < balloonPlacements.length; i++) {
     BABYLON.SceneLoader.ImportMesh(

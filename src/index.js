@@ -13,6 +13,7 @@ let elevation, phi, theta, skyMaterial, sunCoords;
 let ground;
 let airship;
 let testResults = [];
+let memoryUsage = [];
 let readyToTest = false; // Flag to halt any testing logic before full asset load
 
 createScene();
@@ -385,8 +386,10 @@ function startClockTimer() {
       "timeElapsed"
     ).innerHTML = `Time elapsed: ${stringMinutes}:${stringSeconds}`;
     let fps = Math.round(engine.getFps());
+    let memory = performance.memory;
     if (readyToTest) {
       testResults.push(fps);
+      memoryUsage.push(Math.round(memory.usedJSHeapSize / 1048576));
     }
   }, 1000);
 }
@@ -400,7 +403,9 @@ function initTestResultControls() {
           Testing date: ${Moment().toLocaleString()}; \n
           Screen resolution: width: ${canvas.width}, height: ${canvas.height} \n
           Frames per second (each FPS count in array was ticked every second):
-          [${testResults}]
+          ${testResults} \n
+          Memory usage (in Megabytes):
+          ${memoryUsage}
           `,
         ],
         "test_results.txt",

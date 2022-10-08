@@ -14,6 +14,8 @@ let ground;
 let airship;
 let testResults = [];
 let memoryUsage = [];
+let fps;
+let times = [];
 let sizes = { width: 1920, height: 1080 };
 let refreshRate = 0;
 let readyToTest = false; // Flag to halt any testing logic before full asset load
@@ -144,6 +146,7 @@ function doRender() {
         mesh.position.x += 0.002;
       }
     });
+    fpsCounterLoop();
   }
 
   if (airship && readyToTest) {
@@ -388,7 +391,6 @@ function startClockTimer() {
     document.getElementById(
       "timeElapsed"
     ).innerHTML = `Time elapsed: ${stringMinutes}:${stringSeconds}`;
-    let fps = Math.round(engine.getFps());
     let memory = performance.memory;
     if (readyToTest) {
       testResults.push(fps);
@@ -511,4 +513,13 @@ function initPostprocessing() {
   pipeline.bloomWeight = 0.3;
   pipeline.bloomKernel = 64;
   pipeline.bloomScale = 0.5;
+}
+
+function fpsCounterLoop() {
+  const now = performance.now();
+  while (times.length > 0 && times[0] <= now - 1000) {
+    times.shift();
+  }
+  times.push(now);
+  fps = times.length;
 }

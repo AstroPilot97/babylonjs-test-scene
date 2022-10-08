@@ -19,6 +19,7 @@ let times = [];
 let sizes = { width: 1920, height: 1080 };
 let refreshRate = 0;
 let readyToTest = false; // Flag to halt any testing logic before full asset load
+let msaaSamples;
 
 createScene();
 doRender();
@@ -419,7 +420,24 @@ function initBenchmarkControls() {
     .name("Refresh Rate")
     .onChange((value) => {
       refreshRate = value;
-      console.log("refreshRate ", refreshRate);
+    });
+
+  let antialiasingObj = {
+    samples: 1,
+  };
+
+  gui
+    .add(antialiasingObj, "samples", {
+      Off: 1,
+      "2x": 2,
+      "4x": 4,
+      "8x": 8,
+      "16x": 16,
+    })
+    .name("Multisample Antialiasing")
+    .onChange((value) => {
+      pipeline.samples = value;
+      msaaSamples = value;
     });
 
   let testButton = {
@@ -431,7 +449,7 @@ function initBenchmarkControls() {
       startClockTimer();
     },
   };
-  gui.add(testButton, "BeginTest");
+  gui.add(testButton, "BeginTest").name("Begin test");
 }
 
 function setResolution(resolution) {
@@ -470,7 +488,9 @@ function initTestResultControls() {
         [
           `Babylon.js performance test results \n
           Testing date: ${Moment().toLocaleString()}; \n
-          Screen resolution: width: ${canvas.width}, height: ${canvas.height} \n
+          Screen resolution: width: ${sizes.width}, height: ${sizes.height} \n
+          Refresh rate: ${refreshRate} \n
+          MSAA: ${msaaSamples} \n
           Frames per second (each FPS count in array was ticked every second):
           ${testResults} \n
           Memory usage (in Megabytes):
@@ -486,7 +506,7 @@ function initTestResultControls() {
     },
   };
 
-  gui.add(controlObj, "SaveTestResults");
+  gui.add(controlObj, "SaveTestResults").name("Save test results");
 }
 
 function beginCameraLoop() {
@@ -513,6 +533,8 @@ function initPostprocessing() {
   pipeline.bloomWeight = 0.3;
   pipeline.bloomKernel = 64;
   pipeline.bloomScale = 0.5;
+
+  pipeline.samples = 1;
 }
 
 function fpsCounterLoop() {

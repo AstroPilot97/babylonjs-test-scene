@@ -780,4 +780,12 @@
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 
+/**
+ * lil-gui
+ * https://lil-gui.georgealways.com
+ * @version 0.17.0
+ * @author George Michael Brower
+ * @license MIT
+ */
+
 //! moment.js

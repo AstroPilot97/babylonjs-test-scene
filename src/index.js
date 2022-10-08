@@ -3,7 +3,7 @@ import "babylonjs-loaders";
 import { SkyMaterial } from "babylonjs-materials";
 import Stats from "stats.js";
 import Moment from "moment";
-import * as dat from "dat.gui";
+import GUI from "lil-gui";
 import { saveAs } from "file-saver";
 
 let canvas, engine, scene, camera, pipeline;
@@ -14,6 +14,8 @@ let ground;
 let airship;
 let testResults = [];
 let memoryUsage = [];
+let sizes = { width: 1920, height: 1080 };
+let refreshRate = 0;
 let readyToTest = false; // Flag to halt any testing logic before full asset load
 
 createScene();
@@ -22,6 +24,7 @@ doRender();
 function createScene() {
   canvas = document.getElementById("babylonCanvas");
   engine = new BABYLON.Engine(canvas, false, null, true);
+  engine.setSize(sizes.width, sizes.height, true);
 
   scene = new BABYLON.Scene(engine, {
     useClonedMeshMap: true,
@@ -48,7 +51,7 @@ function createScene() {
   );
 
   // GUI
-  gui = new dat.GUI();
+  gui = new GUI();
 
   // Hemispheric light
   hemiLight = new BABYLON.HemisphericLight(
@@ -97,6 +100,7 @@ function createScene() {
   }
 
   // Test controls
+  initBenchmarkControls();
   initTestResultControls();
 
   //Optimization
@@ -108,44 +112,46 @@ function createScene() {
 }
 
 function doRender() {
-  engine.runRenderLoop(() => {
-    scene.render();
+  setTimeout(function () {
+    requestAnimationFrame(doRender);
+  }, 1000 / refreshRate);
 
-    if (phi && theta && readyToTest) {
-      elevation += 0.03;
-      phi = BABYLON.Tools.ToRadians(90 - elevation);
-      theta = BABYLON.Tools.ToRadians(skyMaterial.azimuth * 10);
-      sunCoords = setFromSphericalCoords(1, phi, theta);
-      skyMaterial.sunPosition = sunCoords;
+  scene.render();
 
-      var sunDir = setFromSphericalCoords(-50, phi, theta);
+  if (phi && theta && readyToTest) {
+    elevation += 0.03;
+    phi = BABYLON.Tools.ToRadians(90 - elevation);
+    theta = BABYLON.Tools.ToRadians(skyMaterial.azimuth * 10);
+    sunCoords = setFromSphericalCoords(1, phi, theta);
+    skyMaterial.sunPosition = sunCoords;
 
-      sunlight.direction = new BABYLON.Vector3(sunDir.x, sunDir.y, sunDir.z);
-    }
+    var sunDir = setFromSphericalCoords(-50, phi, theta);
 
-    if (skyMaterial.sunPosition.y > 0.1) {
-      hemiLight.intensity = 0.55;
-      sunlight.setEnabled(true);
-    } else {
-      hemiLight.intensity = 0.1;
-      sunlight.setEnabled(false);
-    }
+    sunlight.direction = new BABYLON.Vector3(sunDir.x, sunDir.y, sunDir.z);
+  }
 
-    if (readyToTest) {
-      scene.meshes.forEach((mesh) => {
-        if (mesh.id.includes("Object")) {
-          mesh.position.x += 0.002;
-        }
-      });
-    }
+  if (skyMaterial.sunPosition.y > 0.1) {
+    hemiLight.intensity = 0.55;
+    sunlight.setEnabled(true);
+  } else {
+    hemiLight.intensity = 0.1;
+    sunlight.setEnabled(false);
+  }
 
-    if (airship && readyToTest) {
-      airship.position.x -= 0.054;
-      camera.position.x -= 0.054;
-    }
+  if (readyToTest) {
+    scene.meshes.forEach((mesh) => {
+      if (mesh.id.includes("Object")) {
+        mesh.position.x += 0.002;
+      }
+    });
+  }
 
-    stats.update();
-  });
+  if (airship && readyToTest) {
+    airship.position.x -= 0.054;
+    camera.position.x -= 0.054;
+  }
+
+  stats.update();
 
   window.addEventListener("resize", () => {
     engine.resize();
@@ -285,9 +291,6 @@ function initBalloons() {
 
         if (i == balloonPlacements.length - 1) {
           document.getElementById("loader").style.display = "none";
-          readyToTest = true;
-          startClockTimer();
-          beginCameraLoop();
         }
       }
     );
@@ -392,6 +395,70 @@ function startClockTimer() {
       memoryUsage.push(Math.round(memory.usedJSHeapSize / 1048576));
     }
   }, 1000);
+}
+
+function initBenchmarkControls() {
+  let resolutionObj = {
+    resolution: "FullHD",
+  };
+  gui
+    .add(resolutionObj, "resolution", ["FullHD", "WQHD", "4K"])
+    .name("Resolution")
+    .onChange((value) => {
+      setResolution(value);
+    });
+
+  let refreshRateObj = {
+    rate: 0,
+  };
+
+  gui
+    .add(refreshRateObj, "rate", { Unlimited: 0, "60Hz": 60, "30Hz": 31 })
+    .name("Refresh Rate")
+    .onChange((value) => {
+      refreshRate = value;
+      console.log("refreshRate ", refreshRate);
+    });
+
+  let testButton = {
+    BeginTest: function () {
+      readyToTest = true;
+      // Camera animation loop
+      beginCameraLoop();
+      // Clock timer
+      startClockTimer();
+    },
+  };
+  gui.add(testButton, "BeginTest");
+}
+
+function setResolution(resolution) {
+  switch (resolution) {
+    case "FullHD":
+      sizes = {
+        width: 1920,
+        height: 1080,
+      };
+      break;
+    case "WQHD":
+      sizes = {
+        width: 2560,
+        height: 1440,
+      };
+      break;
+    case "4K":
+      sizes = {
+        width: 3840,
+        height: 2160,
+      };
+      break;
+    default:
+      sizes = {
+        width: 1920,
+        height: 1080,
+      };
+  }
+  engine.setSize(sizes.width, sizes.height);
 }
 
 function initTestResultControls() {
